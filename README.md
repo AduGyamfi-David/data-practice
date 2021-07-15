@@ -1,0 +1,2 @@
+# data-practice
+I usually set a time myself to complete a certain task (typically 30secs), then aim to stop the timer at exactly 30s, regardless on if the task is completed or not. But what is the distribution of times I record, and can this be modelled, visualised and understood? The purpose of this project is to essentially practice visualizing very simple data, generate insights and potentially develop models from the data.
