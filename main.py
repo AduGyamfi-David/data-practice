@@ -86,5 +86,16 @@ def draw_graph(data, save_to_file):
 
     plt.show()
 
-fetch()
+def upload(data):
+
+    data_file = open("data.csv", "w")
+    out_str = ""
+
+    for i in range(0, len(data)):
+        out_str += (str(data[i]) + ",") if (i != len(data) - 1) else (str(data[i]))
+
+    data_file.write(out_str)
+    data_file.close()
+
+# fetch()
 # main()
