@@ -1,12 +1,11 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from datetime import date
 from pyicloud import PyiCloudService
 from pathlib import Path
+import numpy as np
+from utils import visualize
 
-from requests.models import Response
 
-def fetch():
+def fetch_icloud():
     password_file = open((str(Path(__file__).parents[2]) + "\\password.txt"), "r")
     # print(Path(__file__).parents[2])
     api = PyiCloudService(password_file.readline(), password=password_file.readline())
@@ -40,62 +39,53 @@ def fetch():
             
 
     for i in range(1, len(icloud_file_data_array)):
-        print(icloud_file_data_array[i])
+        # print(icloud_file_data_array[i])
         data.append(float(icloud_file_data_array[i]))
     
     np_data = np.array(data)
 
-    draw_graph(np_data, False)
+    visualize.draw_graph(np_data, False)
+    # upload(np_data)
 
     return 0
 
-def main():
+def fetch_csv():
 
-    data_file = open("data.csv")
-    data = []
-    for line in data_file:
-        data = line.split(",")
+	data_file = open(r"src/data/data.csv")
+	data = []
 
-    for i in range(0, len(data)):
-        data[i] = float(data[i])
 
-    np_data = np.array(data)
+	for line in data_file:
+		data = line.split(",")
 
-    today = date.today().strftime("%d-%m-%Y")
+	for i in range(0, len(data)):
+		data[i] = float(data[i])
+		
+	np_data = np.array(data)
+
     # print(date.today().strftime("%d/%m/%Y"))
 
     # print(int((max(data) - min(data)) * 100))
     #? file_str = today + ".png" 
     #? print(file_str)
 
-    draw_graph(np_data, False)
-
     # plt.hist(np_data, bins=int((max(data) - min(data)) * 100))
     # #* NUMBER OF BINS = RANGE OF FLOATS (then converted into integers), TO ENFORCE ONE VALUE PER BIN
     # #? plt.savefig(file_str, format="PNG")
     # plt.show()
 
-    data_file.close()
+	data_file.close()
 
-def draw_graph(data, save_to_file):
-
-    plt.hist(data, bins=int((max(data) - min(data)) * 100))
-
-    if (save_to_file):
-        plt.savefig(date.today().strftime("%d-%m-%Y") + ".png", format="PNG")
-
-    plt.show()
+	return np_data
 
 def upload(data):
 
-    data_file = open("data.csv", "w")
-    out_str = ""
+    data_file = open("data.csv", "a")
+    out_str = ","
 
     for i in range(0, len(data)):
         out_str += (str(data[i]) + ",") if (i != len(data) - 1) else (str(data[i]))
 
+    # print(out_str)
     data_file.write(out_str)
     data_file.close()
-
-# fetch()
-# main()

@@ -1,0 +1,22 @@
+QWidget {
+	background-color: #fff;
+}
+
+QLabel {
+	border: 1px solid #000;
+	text-align: center;
+	font: 18px #222 Arial "sans-serif";
+
+
+}
+
+QHBoxLayout {
+	border: 1px solid #f00;
+}
+
+QPushButton {
+	background-color: #349ad3;
+	border: none;
+	padding: 15px;
+	border-radius: 2px;
+}
