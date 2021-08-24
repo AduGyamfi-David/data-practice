@@ -51,21 +51,16 @@ def fetch_icloud():
 
 def fetch_csv():
 
-	data_file = open(r"src/data/data.csv")
+	tdata_file = open(r"src/data/tdata.csv")
+	ydata_file = open(r"src/data/ydata.csv")
 	data = []
 
+	t_data, y_data = split_data(tdata_file, ydata_file)
 
-	for line in data_file:
-		data = line.split(",")
+	np_tdata = np.array(t_data)
+	np_ydata = np.array(y_data)
+	np_data = np.append(np_tdata, np_ydata)
 
-	for i in range(0, len(data)):
-		data[i] = float(data[i])
-		
-	np_data = np.array(data)
-
-    # print(date.today().strftime("%d/%m/%Y"))
-
-    # print(int((max(data) - min(data)) * 100))
     #? file_str = today + ".png" 
     #? print(file_str)
 
@@ -74,18 +69,44 @@ def fetch_csv():
     # #? plt.savefig(file_str, format="PNG")
     # plt.show()
 
-	data_file.close()
+	tdata_file.close()
+	ydata_file.close()
 
 	return np_data
 
-def upload(data):
+def split_data(tdf, ydf):
 
-    data_file = open("data.csv", "a")
+	for line in tdf:
+		td = line.split(",")
+	
+	for i in range(0,len(td)):
+		td[i] = float(td[i]) - 30
+
+	for line in ydf:
+		yd = line.split(",")
+	
+	for i in range(0, len(yd)):
+		yd[i] = float(yd[i])
+
+	return (td, yd)
+
+def upload(tdata, ydata):
+
+    tdata_file = open("src/data/tdata.csv", "a")
+    ydata_file = open("src/data/ydata.csv", "a")
     out_str = ","
 
-    for i in range(0, len(data)):
-        out_str += (str(data[i]) + ",") if (i != len(data) - 1) else (str(data[i]))
+    for i in range(0, len(tdata)):
+        out_str += (str(tdata[i]) + ",") if (i != len(tdata) - 1) else (str(tdata[i]))
 
-    # print(out_str)
-    data_file.write(out_str)
-    data_file.close()
+    tdata_file.write(out_str)
+	
+    out_str = ","
+
+    for i in range(0, len(ydata)):
+        out_str += (str(ydata[i]) + ",") if (i != len(ydata) - 1) else (str(ydata[i]))
+
+    ydata_file.write(out_str)
+
+    tdata_file.close()
+    ydata_file.close()
