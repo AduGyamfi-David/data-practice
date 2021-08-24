@@ -37,7 +37,7 @@ def startup():
         },
     }
 
-    window.setStyleSheet(open(r"css\welcome.css").read())
+    window.setStyleSheet(open(r"src\css\welcome.css").read())
 
     #_ get original size of window and label (with text) before data added
     original_window_dim = window.frameGeometry()
