@@ -1,4 +1,7 @@
 import sys
+import numpy as np
+from pyicloud import PyiCloudService
+from pathlib import Path
 from PyQt5.QtWidgets import (
     QApplication,
     QHBoxLayout, 
@@ -61,9 +64,72 @@ def startup():
     # window_objects["title_area"].addSpacing()
     window_objects["title_area"]["lblTitle"].setFixedSize(original_label_size)
 
-# fetch()
+def fetch_icloud():
+    password_file = open((str(Path(__file__).parents[3]) + "\\password.txt"), "r")
+    my_apple_id = password_file.readline()
+    my_password = password_file.readline()
+
+    print(my_apple_id + my_password)
+
+    api = PyiCloudService(apple_id=my_apple_id, password=my_password)
+
+    if api.requires_2fa:
+        two_fa_code = input("Enter the code you received of one of your approved devices: ")
+        result = api.validate_2fa_code(two_fa_code)
+        print("Validation result: " + str(result))
+
+    # print(api.devices)
+
+    # print(api.drive['Shortcuts'].dir())
+
+    # print("\n")
+    data_file = api.drive['Shortcuts']['data.txt']
+
+    # print(data_file.open().content)
+
+    icloud_file_data_str = str(data_file.open().content)
+
+    # print(icloud_file_data)
+
+    icloud_file_data_array = icloud_file_data_str.split("\\n")
+    icloud_file_data_array[-1] = icloud_file_data_array[-1].split("'")[0]
+    tdata = []
+    ydata = []
+
+    # print(len(icloud_file_data))
+
+    # with data_file.open() as icloud_file_response: 
+    #     with open(data_file.name, "rt") as icloud_file:
+            
+
+    for i in range(1, len(icloud_file_data_array)):
+        item = icloud_file_data_array[i].split(";")
+        if (item[1] == "t"):
+            tdata.append(float(item[0]))
+        else:
+            ydata.append(float(item[0]))
+        # print(icloud_file_data_array[i])
+        # data.append(float(icloud_file_data_array[i]))
+        
+    
+    np_tdata = np.array(tdata)
+
+    visualize.draw_graph(np_tdata, False)
+
+    np_ydata = np.array(ydata)
+
+    visualize.draw_graph(np_ydata, False)
+    # upload(np_data)
+    return 0    
+# password_file = open((str(Path(__file__).parents[3]) + "\\password.txt"), "r")
+# my_apple_id = password_file.readline()
+# my_password = password_file.readline()
+# print(my_apple_id + my_password)
+
+# api = PyiCloudService(my_apple_id, password=my_password)
+fetch_icloud()
 # main()
 # visualize.draw_graph(data.fetch_csv(), False)
-startup()
-window.show()
-sys.exit(app.exec_())
+# startup()
+# window.show()
+# sys.exit(app.exec_())

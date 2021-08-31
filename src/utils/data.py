@@ -6,9 +6,13 @@ from utils import visualize
 
 
 def fetch_icloud():
-    password_file = open((str(Path(__file__).parents[2]) + "\\password.txt"), "r")
-    # print(Path(__file__).parents[2])
-    api = PyiCloudService(password_file.readline(), password=password_file.readline())
+    password_file = open((str(Path(__file__).parents[3]) + "\\password.txt"), "r")
+    my_apple_id = password_file.readline()
+    my_password = password_file.readline()
+
+    print(my_apple_id + my_password)
+
+    api = PyiCloudService(apple_id=my_apple_id, password=my_password)
 
     if api.requires_2fa:
         two_fa_code = input("Enter the code you received of one of your approved devices: ")
@@ -30,23 +34,33 @@ def fetch_icloud():
 
     icloud_file_data_array = icloud_file_data_str.split("\\n")
     icloud_file_data_array[-1] = icloud_file_data_array[-1].split("'")[0]
-    data = []
+    tdata = []
+    ydata = []
 
     # print(len(icloud_file_data))
 
-    # with data_file.open() as icloud_file_response:
+    # with data_file.open() as icloud_file_response: 
     #     with open(data_file.name, "rt") as icloud_file:
             
 
     for i in range(1, len(icloud_file_data_array)):
+        item = icloud_file_data_array[i].split(";")
+        if (item[1] == "t"):
+            tdata.append(float(item[0]))
+        else:
+            ydata.append(float(item[0]))
         # print(icloud_file_data_array[i])
-        data.append(float(icloud_file_data_array[i]))
+        # data.append(float(icloud_file_data_array[i]))
+        
     
-    np_data = np.array(data)
+    np_tdata = np.array(tdata)
 
-    visualize.draw_graph(np_data, False)
+    visualize.draw_graph(np_tdata, False)
+
+    np_ydata = np.array(ydata)
+
+    visualize.draw_graph(np_ydata, False)
     # upload(np_data)
-
     return 0
 
 def fetch_csv():
