@@ -1,9 +1,12 @@
 import sys
+from typing import MutableMapping
 import numpy as np
+from numpy.lib import twodim_base
 from pyicloud import PyiCloudService
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QApplication,
+    QFrame,
     QHBoxLayout, 
     QPushButton, 
     QVBoxLayout,
@@ -14,21 +17,25 @@ from utils import data
 from utils import visualize
 
 app = QApplication(sys.argv)
-window = QWidget()
+welcome_window = QWidget()
+icloud_window = QWidget()
+csv_window = QWidget()
 
-# template_label = QLabel()
-# template_label.wordWrap()
-# template_HBox = QHBoxLayout()
-# template_HBox.addSpacing()
-# template_HBox.addStretch()
+def main():
+    startup()
+
+    welcome_window.show()
+
+    sys.exit(app.exec_())
 
 def startup():
-    window.setWindowTitle("Data Practice")
+    welcome_window.setWindowTitle("Data Practice")
 
     window_objects = {
         "window_layout": QVBoxLayout(),
 
         "title_area": {
+            "label_frame": QFrame(welcome_window),
             "title_layout": QHBoxLayout(),
             "lblTitle": QLabel('<h1>Welcome to Data Practice</h1>')
         },
@@ -39,15 +46,16 @@ def startup():
             "cmdLoadFromiCloud": QPushButton('Load from iCloud')
         },
     }
+    
+    welcome_window.setStyleSheet(open(r"src\css\welcome.css").read())
 
-    window.setStyleSheet(open(r"src\css\welcome.css").read())
-
-    #_ get original size of window and label (with text) before data added
-    original_window_dim = window.frameGeometry()
-    original_label_size = window_objects["title_area"]["lblTitle"].sizeHint()
+    #_ get original size of window before objects added
+    original_window_dim = welcome_window.frameGeometry()
 
     #_ add label to container
     window_objects["title_area"]["title_layout"].addWidget(window_objects["title_area"]["lblTitle"])
+    window_objects["title_area"]["label_frame"].setLayout(window_objects["title_area"]["title_layout"])
+    window_objects["title_area"]["label_frame"].adjustSize()
 
     #_ add buttons to container
     window_objects["buttons_area"]["buttons_layout"].addWidget(window_objects["buttons_area"]["cmdLoadFromFile"])
@@ -56,80 +64,108 @@ def startup():
     #_ add label & buttons to window container, then set window container
     window_objects["window_layout"].addLayout(window_objects["title_area"]["title_layout"])
     window_objects["window_layout"].addLayout(window_objects["buttons_area"]["buttons_layout"])
-    window.setLayout(window_objects["window_layout"])
+    welcome_window.setLayout(window_objects["window_layout"])
 
     #_ restore orginial size of window & label
-    window.setGeometry(original_window_dim)
-    window_objects["title_area"]["lblTitle"].adjustSize()
-    # window_objects["title_area"].addSpacing()
-    window_objects["title_area"]["lblTitle"].setFixedSize(original_label_size)
+    welcome_window.setGeometry(original_window_dim)
 
-def fetch_icloud():
-    password_file = open((str(Path(__file__).parents[3]) + "\\password.txt"), "r")
-    my_apple_id = password_file.readline()
-    my_password = password_file.readline()
+    #_ add events to buttons
+    window_objects["buttons_area"]["cmdLoadFromiCloud"].clicked.connect(loadiCloudWindow)
 
-    print(my_apple_id + my_password)
+def loadiCloudWindow():
+    welcome_window.close()
 
-    api = PyiCloudService(apple_id=my_apple_id, password=my_password)
+    icloud_window.setWindowTitle("Fetch from iCloud")
 
-    if api.requires_2fa:
-        two_fa_code = input("Enter the code you received of one of your approved devices: ")
-        result = api.validate_2fa_code(two_fa_code)
-        print("Validation result: " + str(result))
+    window_objects = {
+        "window_layout": QVBoxLayout(),
 
-    # print(api.devices)
+        "heading": {   
+            "container": QFrame(icloud_window),
+            "layout": QHBoxLayout(),
+            "label": QLabel('<h1>Loading From iCloud...</h1>')
+        },
 
-    # print(api.drive['Shortcuts'].dir())
+        "icloud_data": {
+            "container": QFrame(icloud_window),
+            "layout": QHBoxLayout(),
 
-    # print("\n")
-    data_file = api.drive['Shortcuts']['data.txt']
+            "header_container": QFrame(),
+            "header_layout": QVBoxLayout(),
 
-    # print(data_file.open().content)
+            "info_container": QFrame(),
+            "info_layout": QVBoxLayout(),
 
-    icloud_file_data_str = str(data_file.open().content)
+            "headers": [
+                QLabel('<h3>Total number of data items: </h3>'), 
+                QLabel('<h4>From Dataset 1: </h4>'), 
+                QLabel('<h4>From Dataset 2: </h4>')
+            ],
 
-    # print(icloud_file_data)
+            "info": [
+                QLabel(),
+                QLabel(),
+                QLabel()
+            ]
+        },
 
-    icloud_file_data_array = icloud_file_data_str.split("\\n")
-    icloud_file_data_array[-1] = icloud_file_data_array[-1].split("'")[0]
-    tdata = []
-    ydata = []
+        "data_actions": {
+            "container": QFrame(icloud_window),
+            "layout": QHBoxLayout(),
+            "cmdAddToCSVs": QPushButton("Add iCloud data to CSV files"),
+            "cmdVisualise": QPushButton("Visualise Data from iCloud")
+        }
+    }
 
-    # print(len(icloud_file_data))
-
-    # with data_file.open() as icloud_file_response: 
-    #     with open(data_file.name, "rt") as icloud_file:
-            
-
-    for i in range(1, len(icloud_file_data_array)):
-        item = icloud_file_data_array[i].split(";")
-        if (item[1] == "t"):
-            tdata.append(float(item[0]))
-        else:
-            ydata.append(float(item[0]))
-        # print(icloud_file_data_array[i])
-        # data.append(float(icloud_file_data_array[i]))
-        
     
-    np_tdata = np.array(tdata)
+    #_ call stylesheet for window
+    icloud_window.setStyleSheet(open(r"src\css\icloud.css").read())
 
-    visualize.draw_graph(np_tdata, False)
+    #_ edit window
+    original_window_dim = icloud_window.frameGeometry()
 
-    np_ydata = np.array(ydata)
+    #_ edit loading header
+    window_objects["heading"]["layout"].addWidget(window_objects["heading"]["label"])
+    window_objects["heading"]["container"].setLayout(window_objects["heading"]["layout"])
+    window_objects["heading"]["container"].adjustSize()
+    
+    #_ edit headers for loaded data
+    for label in window_objects["icloud_data"]["headers"]:
+        window_objects["icloud_data"]["header_layout"].addWidget(label)
+    window_objects["icloud_data"]["header_container"].setLayout(window_objects["icloud_data"]["header_layout"])
+    window_objects["icloud_data"]["header_container"].adjustSize()
 
-    visualize.draw_graph(np_ydata, False)
-    # upload(np_data)
-    return 0    
-# password_file = open((str(Path(__file__).parents[3]) + "\\password.txt"), "r")
-# my_apple_id = password_file.readline()
-# my_password = password_file.readline()
-# print(my_apple_id + my_password)
+    #_ edit info from loaded data
+    for label in window_objects["icloud_data"]["info"]:
+        label.setText('<h5>TEMP</h5>')
+        window_objects["icloud_data"]["info_layout"].addWidget(label)
+    window_objects["icloud_data"]["info_container"].setLayout(window_objects["icloud_data"]["info_layout"])
+    window_objects["icloud_data"]["info_container"].adjustSize()
 
-# api = PyiCloudService(my_apple_id, password=my_password)
-fetch_icloud()
-# main()
-# visualize.draw_graph(data.fetch_csv(), False)
-# startup()
-# window.show()
-# sys.exit(app.exec_())
+    #_ edit frame for all data from iCloud
+    window_objects["icloud_data"]["layout"].addWidget(window_objects["icloud_data"]["header_container"])
+    window_objects["icloud_data"]["layout"].addWidget(window_objects["icloud_data"]["info_container"])
+    window_objects["icloud_data"]["container"].setLayout(window_objects["icloud_data"]["layout"])
+    window_objects["icloud_data"]["container"].adjustSize()
+
+    #_ edit action controls for data
+    window_objects["data_actions"]["layout"].addWidget(window_objects["data_actions"]["cmdAddToCSVs"])
+    window_objects["data_actions"]["layout"].addWidget(window_objects["data_actions"]["cmdVisualise"])
+    window_objects["data_actions"]["container"].setLayout(window_objects["data_actions"]["layout"])
+    window_objects["data_actions"]["container"].adjustSize()
+
+    #_ add all to window
+    window_objects["window_layout"].addWidget(window_objects["heading"]["container"])
+    window_objects["window_layout"].addWidget(window_objects["icloud_data"]["container"])
+    window_objects["window_layout"].addWidget(window_objects["data_actions"]["container"])
+    icloud_window.setLayout(window_objects["window_layout"])
+    icloud_window.setGeometry(original_window_dim)
+
+    icloud_window.show()
+    return 0
+
+def loadCSVWindow():
+
+    return 0
+
+main()

@@ -10,7 +10,10 @@ def fetch_icloud():
     my_apple_id = password_file.readline()
     my_password = password_file.readline()
 
-    print(my_apple_id + my_password)
+    my_apple_id = my_apple_id.split("\n")[0]
+
+    # print("%r" % my_apple_id)
+    # print("%r" % my_password)
 
     api = PyiCloudService(apple_id=my_apple_id, password=my_password)
 
@@ -61,7 +64,7 @@ def fetch_icloud():
 
     visualize.draw_graph(np_ydata, False)
     # upload(np_data)
-    return 0
+    return 0    
 
 def fetch_csv():
 

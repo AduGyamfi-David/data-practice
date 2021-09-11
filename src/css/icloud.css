@@ -12,11 +12,9 @@ QLabel {
 }
 
 QFrame {
-	/* border: 1px solid #f00; */
-	width: 100%;
+	border: 1px solid #f00;
+	width: 100%;	
 	height: 100%;
-
-	margin: auto;
 }
 
 QPushButton {
@@ -30,6 +28,6 @@ QPushButton:hover {
 	background-color: #2b79a7;
 }
 
-QLabel h1 {
+h1 {
 	color: #349ad3;
 }
