@@ -2,18 +2,16 @@ import numpy as np
 from pyicloud import PyiCloudService
 from pathlib import Path
 import numpy as np
-from utils import visualize
+# from utils import visualize
 
 
 def fetch_icloud():
-    password_file = open((str(Path(__file__).parents[3]) + "\\password.txt"), "r")
+    password_file = open((str(Path(__file__).parents[4]) + "\\password.txt"), "r")
     my_apple_id = password_file.readline()
     my_password = password_file.readline()
 
     my_apple_id = my_apple_id.split("\n")[0]
 
-    # print("%r" % my_apple_id)
-    # print("%r" % my_password)
 
     api = PyiCloudService(apple_id=my_apple_id, password=my_password)
 
@@ -22,49 +20,34 @@ def fetch_icloud():
         result = api.validate_2fa_code(two_fa_code)
         print("Validation result: " + str(result))
 
-    # print(api.devices)
+    if ('data.txt' in api.drive['Shortcuts'].dir()):
+        data_file = api.drive['Shortcuts']['data.txt']
 
-    # print(api.drive['Shortcuts'].dir())
+        icloud_file_data_str = str(data_file.open().content)
 
-    # print("\n")
-    data_file = api.drive['Shortcuts']['data.txt']
+        icloud_file_data_array = icloud_file_data_str.split("\\n")
+        icloud_file_data_array[-1] = icloud_file_data_array[-1].split("'")[0]
+        tdata = []
+        ydata = []
 
-    # print(data_file.open().content)
+        for i in range(1, len(icloud_file_data_array)):
+            item = icloud_file_data_array[i].split(";")
+            if (item[1] == "t"):
+                tdata.append(float(item[0]))
+            else:
+                ydata.append(float(item[0]))
 
-    icloud_file_data_str = str(data_file.open().content)
+        np_tdata = np.array(tdata)
 
-    # print(icloud_file_data)
+        np_ydata = np.array(ydata)
 
-    icloud_file_data_array = icloud_file_data_str.split("\\n")
-    icloud_file_data_array[-1] = icloud_file_data_array[-1].split("'")[0]
-    tdata = []
-    ydata = []
+        return np_tdata, np_ydata  
 
-    # print(len(icloud_file_data))
+    else:
+        print("Latest data already uploaded")
+        print("Run shortcut to add new data to iCloud")
 
-    # with data_file.open() as icloud_file_response: 
-    #     with open(data_file.name, "rt") as icloud_file:
-            
-
-    for i in range(1, len(icloud_file_data_array)):
-        item = icloud_file_data_array[i].split(";")
-        if (item[1] == "t"):
-            tdata.append(float(item[0]))
-        else:
-            ydata.append(float(item[0]))
-        # print(icloud_file_data_array[i])
-        # data.append(float(icloud_file_data_array[i]))
-        
-    
-    np_tdata = np.array(tdata)
-
-    visualize.draw_graph(np_tdata, False)
-
-    np_ydata = np.array(ydata)
-
-    visualize.draw_graph(np_ydata, False)
-    # upload(np_data)
-    return 0    
+        return (np.array([]), np.array([]))
 
 def fetch_csv():
 
@@ -76,20 +59,11 @@ def fetch_csv():
 
 	np_tdata = np.array(t_data)
 	np_ydata = np.array(y_data)
-	np_data = np.append(np_tdata, np_ydata)
-
-    #? file_str = today + ".png" 
-    #? print(file_str)
-
-    # plt.hist(np_data, bins=int((max(data) - min(data)) * 100))
-    # #* NUMBER OF BINS = RANGE OF FLOATS (then converted into integers), TO ENFORCE ONE VALUE PER BIN
-    # #? plt.savefig(file_str, format="PNG")
-    # plt.show()
 
 	tdata_file.close()
 	ydata_file.close()
 
-	return np_data
+	return np_tdata, np_ydata
 
 def split_data(tdf, ydf):
 
@@ -127,3 +101,5 @@ def upload(tdata, ydata):
 
     tdata_file.close()
     ydata_file.close()
+
+    print("UPLOAD SUCCESSFUL")
