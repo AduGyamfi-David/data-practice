@@ -1,5 +1,6 @@
 import sys
 from typing import MutableMapping
+from PyQt5.QtCore import QRect
 import numpy as np
 from numpy.lib import twodim_base
 from pyicloud import PyiCloudService
@@ -20,11 +21,13 @@ app = QApplication(sys.argv)
 welcome_window = QWidget()
 icloud_window = QWidget()
 csv_window = QWidget()
+visualisation_window = QWidget()
 
 def main():
     startup()
 
-    welcome_window.show()
+    # welcome_window.show()
+    visualize.draw_graph(data.fetch_csv()[0], False)
 
     sys.exit(app.exec_())
 
@@ -41,7 +44,8 @@ def startup():
         },
 
         "buttons_area": {
-            "buttons_layout": QHBoxLayout(),
+            "buttons_layout": QVBoxLayout(),
+            "buttons_frame": QFrame(welcome_window),
             "cmdLoadFromFile": QPushButton('Load data from file'),
             "cmdLoadFromiCloud": QPushButton('Load from iCloud')
         },
@@ -58,12 +62,18 @@ def startup():
     window_objects["title_area"]["label_frame"].adjustSize()
 
     #_ add buttons to container
+    window_objects["buttons_area"]["cmdLoadFromFile"].setObjectName("cmdLoadFromFile")
     window_objects["buttons_area"]["buttons_layout"].addWidget(window_objects["buttons_area"]["cmdLoadFromFile"])
     window_objects["buttons_area"]["buttons_layout"].addWidget(window_objects["buttons_area"]["cmdLoadFromiCloud"])
+    window_objects["buttons_area"]["buttons_frame"].setLayout(window_objects["buttons_area"]["buttons_layout"])
+    # window_objects["buttons_area"]["buttons_frame"].adjustSize()
 
     #_ add label & buttons to window container, then set window container
-    window_objects["window_layout"].addLayout(window_objects["title_area"]["title_layout"])
-    window_objects["window_layout"].addLayout(window_objects["buttons_area"]["buttons_layout"])
+    # window_objects["window_layout"].addLayout(window_objects["title_area"]["title_layout"])
+    # window_objects["window_layout"].addLayout(window_objects["buttons_area"]["buttons_layout"])
+    # window_objects["title_area"]["label_frame"].setLayout(window_objects["title_area"]["title_layout"])
+    window_objects["window_layout"].addWidget(window_objects["title_area"]["label_frame"])
+    window_objects["window_layout"].addWidget(window_objects["buttons_area"]["buttons_frame"])
     welcome_window.setLayout(window_objects["window_layout"])
 
     #_ restore orginial size of window & label
@@ -176,7 +186,8 @@ def loadiCloudWindow():
         window_objects["icloud_data"]["info"][2].setText(str(len(np_ydata)))
 
         window_objects["data_actions"]["cmdAddToCSVs"].clicked.connect(lambda : data.upload(np_tdata, np_ydata))
-        window_objects["data_actions"]["cmdVisualise"].clicked.connect(lambda : visualize.draw_graph(np_all_data, False))
+        # window_objects["data_actions"]["cmdVisualise"].clicked.connect(lambda : visualize.draw_graph(np_all_data, False))
+        window_objects["data_actions"]["cmdVisualise"].clicked.connect(loadVisualisationWindow)
 
     return 0
 
@@ -278,6 +289,20 @@ def loadCSVWindow():
         window_objects["icloud_data"]["info"][1].setText(str(len(np_tdata)))
         window_objects["icloud_data"]["info"][2].setText(str(len(np_ydata)))
 
+        window_objects["data_actions"]["cmdVisualise"].clicked.connect(lambda: loadVisualisationWindow(csv_window))
+
+    return 0
+
+def loadVisualisationWindow(prev_window):
+    prev_window.close()
+
+    visualisation_window.setWindowTitle("Visualisation of Data")
+
+    visualisation_window.setGeometry(QRect(0, 0, 1280, 720))
+
+    window_objects = {}
+
+    visualisation_window.show()
     return 0
 
 main()
